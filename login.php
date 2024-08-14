@@ -10,7 +10,6 @@ if (isset($_POST['login'])) {
 
     // ป้องกัน SQL Injection
     $username = $conn->real_escape_string($username);
-    $password = $conn->real_escape_string($password);
 
     // คำสั่ง SQL สำหรับตรวจสอบข้อมูลผู้ใช้
     $sql = "SELECT * FROM users WHERE username = ? AND user_type = ?";
@@ -27,7 +26,7 @@ if (isset($_POST['login'])) {
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
 
-        // ตรวจสอบรหัสผ่านที่ไม่เข้ารหัส
+        // ตรวจสอบรหัสผ่านที่เข้ารหัส
         if ($password === $row['password']) {
             // บันทึกวันที่และเวลาเข้าสู่ระบบ
             $update_sql = "UPDATE users SET last_login = NOW() WHERE username = ?";
@@ -43,12 +42,13 @@ if (isset($_POST['login'])) {
             $_SESSION['username'] = $username;
             $_SESSION['user_type'] = $userType;
             $_SESSION['fname'] = $row['fname'];
+            $_SESSION['loggedin'] = true; // เพิ่มบรรทัดนี้
 
-            if($_SESSION['user_type'] = $userType == 'customer'){
-                header("Location: index.php"); // เปลี่ยนเส้นทางไปยังหน้าแดชบอร์ด
-            }
-            if($_SESSION['user_type'] = $userType == 'owner'){
-                header("Location: add.php"); // เปลี่ยนเส้นทางไปยังหน้าแดชบอร์ด
+            // เปลี่ยนเส้นทางไปยังหน้าแดชบอร์ดตามประเภทผู้ใช้
+            if ($userType === 'customer') {
+                header("Location: index.php");
+            } elseif ($userType === 'owner') {
+                header("Location: add.php");
             }
             exit();
         } else {
